@@ -126,8 +126,7 @@ def show():
         st.dataframe(
             merged[["Hole", "Par", "Score", "Diff"]],
             use_container_width=True, hide_index=True
-        )
-    # Categorize Shots for Donut
+        )    # Categorize Shots for Donut
     def categorize_shot(diff):
         if diff <= -1:
             return "Birdie"
@@ -142,6 +141,7 @@ def show():
         else:
             return "Blow-up"
 
+
     merged["Shot"] = merged["Diff"].apply(categorize_shot)
 
     # Shot Distribution Donut Chart
@@ -154,7 +154,7 @@ def show():
             names="Shot",
             values="Count",
             color="Shot",
-            hole=0.5,
+            hole=0.3,
             color_discrete_map={
                 "Birdie": "#a8e6a2",   # soft green
                 "Par": "#d0f2b2",      # very light green
@@ -164,6 +164,18 @@ def show():
                 "Blow-up": "#d8a8ff"   # soft purple for dramatic effect
             },
         )
-
-        fig.update_traces(textposition='inside', textinfo='percent+label')
+        
+        fig.update_traces(
+            textposition='inside',
+            textinfo='percent+label',
+            marker_line_color="#ffffff",
+            marker_line_width=2
+        )
+        fig.update_layout(
+            paper_bgcolor="#14171F",
+            plot_bgcolor="#14171F",
+            margin=dict(l=20, r=20, t=20, b=20)
+        )
         st.plotly_chart(fig, use_container_width=True)
+
+
