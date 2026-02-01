@@ -10,13 +10,13 @@ def navbar():
         menu_title=None,  # Hide the title
         options=[
             "Home",
-            "Hole Analysis",
+            # "Hole Analysis",
             "Play",
             "Round Summary",
         ],
         icons=[
             "house-fill",
-            "flag-fill",
+            # "flag-fill",
             "plus-circle-fill",
             "bar-chart-fill"
         ],

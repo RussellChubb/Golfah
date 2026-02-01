@@ -5,10 +5,14 @@ import matplotlib.colors as mcolors
 import plotly.express as px
 from utils.Data_Loader import load_data
 
+# TODO
+# Have Round ID Filter be responsive to other filters.
+# Score Trend Profile Time Series
+
 def show():
 
     # Title
-    st.title("📊 Golf Rounds Overview")
+    st.title("📊 Round Summary")
 
     # Load Data
     summary_df, rounds_df, course_df = load_data()
@@ -24,13 +28,10 @@ def show():
         rounds_df["Player"].astype(str) + "_" +
         rounds_df["Course"].astype(str)
     )
-
-    # Header
-    st.header("🏌️ Round Summary + Filters")
     
     # Filters
-    col_round, col_course, col_player, col_type = st.columns(4)
-
+    col_round, col_course, col_player, col_type, col_roundid = st.columns(5)
+    
     round_options = sorted(summary_df["Round"].dropna().unique().tolist())
     with col_round:
         selected_rounds = st.multiselect(
@@ -39,19 +40,27 @@ def show():
             default=["Full-18"] if "Full-18" in round_options else [],
         )
 
+    # Course Filter
     course_options = sorted(summary_df["Course"].dropna().unique().tolist())
     with col_course:
         selected_courses = st.multiselect("Course", options=course_options, default=[])
 
+    # Player Filter
     player_options = sorted(summary_df["Player"].dropna().unique().tolist())
     default_players = ["Russell"] if "Russell" in player_options else []
     with col_player:
         selected_players = st.multiselect("Player", options=player_options, default=default_players)
 
+    # Round Type Filter
     with col_type:
         selected_types = st.multiselect("Type", options=summary_df["Type"].dropna().unique().tolist(), default=["Solo"])
 
-    # Apply Filters
+    # RoundID Filter
+    with col_roundid:
+        roundid_options = sorted(summary_df["RoundID"].dropna().unique().tolist())
+        selected_roundids = st.multiselect("Round ID", options=roundid_options, default=[])
+
+    # Allow users to Apply Filters
     filtered_summary = summary_df.copy()
     if selected_rounds:
         filtered_summary = filtered_summary[filtered_summary["Round"].isin(selected_rounds)]
@@ -61,21 +70,14 @@ def show():
         filtered_summary = filtered_summary[filtered_summary["Player"].isin(selected_players)]
     if selected_types:
         filtered_summary = filtered_summary[filtered_summary["Type"].isin(selected_types)]
+    if selected_roundids:
+        filtered_summary = filtered_summary[filtered_summary["RoundID"].isin(selected_roundids)]
 
+    # Small Caption to show number of rounds selected
     st.caption(f"📊 {len(filtered_summary)} rounds selected")
     if filtered_summary.empty:
         st.info("No rounds match the selected filters.")
         st.stop()
-
-    # Style function for gradient
-    def rgba_gradient(series, cmap="RdYlGn_r", alpha=0.35):
-        import matplotlib.pyplot as plt
-        norm = mcolors.Normalize(vmin=series.min(), vmax=series.max())
-        cmap = plt.get_cmap(cmap)
-        def color(val):
-            r, g, b, _ = cmap(norm(val))
-            return f"background-color: rgba({int(r*255)}, {int(g*255)}, {int(b*255)}, {alpha})"
-        return [color(v) for v in series]
 
     # Display Summary Table
     display_df = filtered_summary.copy()
@@ -91,42 +93,21 @@ def show():
         }
     )
     display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime("%d %b %Y")
-    display_df = display_df.drop(columns=["ScoreDiff"], errors="ignore")
+    display_df = display_df.drop(columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"], errors="ignore")
 
-    # Apply color gradient
-    styled_df = display_df.style.apply(rgba_gradient, subset=["➕ / ➖ vs Par"], alpha=0.45)
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
+    # Rounds DataFrame Display
+    st.dataframe(display_df, width="stretch", hide_index=True)
 
-    # Select Round for Hole Analysis
-    # Header
-    st.header("🕳️ Hole Analysis") 
-
-    filtered_summary["Label"] = (
-        pd.to_datetime(filtered_summary["Date"]).dt.strftime("%d %b %Y") +
-        " — " + filtered_summary["Player"] + " @ " + filtered_summary["Course"]
-    )
-
-    round_options = filtered_summary[["RoundID", "Label"]].to_dict(orient="records")
-    selected_label = st.selectbox(
-        "Select a round to view hole analysis",
-        options=[r["Label"] for r in round_options]
-    )
-
-    selected_round_id = next(r["RoundID"] for r in round_options if r["Label"] == selected_label)
-
-    # Filter hole data
-    round_holes = rounds_df[rounds_df["RoundID"] == selected_round_id]
+    # Filter hole data based on RoundID filter (or all filtered rounds if none selected)
+    if selected_roundids:
+        round_holes = rounds_df[rounds_df["RoundID"].isin(selected_roundids)]
+    else:
+        round_holes = rounds_df[rounds_df["RoundID"].isin(filtered_summary["RoundID"])]
+    
     merged = round_holes.merge(course_df, on=["Course", "Hole"], how="left")
     merged["Diff"] = merged["Score"] - merged["Par"]
 
-    st.subheader(f"Round: {selected_label}")
-
-    dataframe_col, chart_col = st.columns(2)
-    with dataframe_col:
-        st.dataframe(
-            merged[["Hole", "Par", "Score", "Diff"]],
-            use_container_width=True, hide_index=True
-        )    # Categorize Shots for Donut
+    # Function to categorize shots
     def categorize_shot(diff):
         if diff <= -1:
             return "Birdie"
@@ -139,13 +120,15 @@ def show():
         elif diff == 3:
             return "Triple"
         else:
-            return "Blow-up"
-
+            return "Blow-up (4+)"
 
     merged["Shot"] = merged["Diff"].apply(categorize_shot)
 
+    # Layout: Two Columns
+    col_scoretrend, col_donut = st.columns(2)
+
     # Shot Distribution Donut Chart
-    with chart_col:
+    with col_donut:
         shot_counts = merged["Shot"].value_counts().reset_index()
         shot_counts.columns = ["Shot", "Count"]
 
@@ -156,12 +139,12 @@ def show():
             color="Shot",
             hole=0.3,
             color_discrete_map={
-                "Birdie": "#a8e6a2",   # soft green
-                "Par": "#d0f2b2",      # very light green
-                "Bogey": "#ffe29a",    # pastel yellow
-                "Double": "#ffb285",   # soft orange
-                "Triple": "#ff7f7f",   # pastel red
-                "Blow-up": "#d8a8ff"   # soft purple for dramatic effect
+                "Birdie": "#a8e6a2",
+                "Par": "#d0f2b2",
+                "Bogey": "#ffe29a",
+                "Double": "#ffb285",
+                "Triple": "#ff7f7f",
+                "Blow-up (4+)": "#d8a8ff"
             },
         )
         
@@ -171,11 +154,51 @@ def show():
             marker_line_color="#ffffff",
             marker_line_width=2
         )
-        fig.update_layout(
-            paper_bgcolor="#14171F",
-            plot_bgcolor="#14171F",
-            margin=dict(l=20, r=20, t=20, b=20)
+
+        st.plotly_chart(fig, width="stretch")
+
+    # Score Trend Over Time 18 vs 9 Holes
+    with col_scoretrend:
+        # Start from the filtered summary (already respects filters like Player, Course, Type, RoundID)
+        plot_df = filtered_summary.copy()
+
+        # Convert Date to datetime
+        plot_df["Date"] = pd.to_datetime(plot_df["Date"])
+
+        # Make a 'type group' column: Full 18 vs Front/Back 9
+        def group_type(row):
+            t = str(row["Round"]).strip()  # safe: remove whitespace
+            if t == "Full-18":
+                return "Full 18"
+            elif t in ["Front-9", "Back-9"]:
+                return "Front/Back 9"
+            else:
+                return None
+
+        plot_df["TypeGroup"] = plot_df.apply(group_type, axis=1)
+        plot_df = plot_df[plot_df["TypeGroup"].notna()]
+
+        # Sort by Date
+        plot_df = plot_df.sort_values("Date")
+
+        # Plot
+        fig = px.line(
+            plot_df,
+            x="Date",
+            y="Score",
+            color="Player",        # now multiple players will each have their own line
+            line_dash="TypeGroup", # Full 18 vs 9-hole rounds
+            markers=True,
+            color_discrete_sequence=px.colors.qualitative.Set2
         )
+
+        fig.update_layout(
+            xaxis_title="Date",
+            yaxis_title="Score",
+            legend_title="Player / Round Type",
+            template="plotly_dark"
+        )
+
         st.plotly_chart(fig, use_container_width=True)
 
 

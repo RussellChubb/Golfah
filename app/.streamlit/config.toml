@@ -8,4 +8,4 @@ textColor="#fafafa"
 gatherUsageStats = false
 
 [server]
-enableCORS = false
+enableCORS = true
