@@ -1,4 +1,4 @@
-# Golfah: Interactive Round Summary + Hole Analysis with RoundID
+# Golfah: Interactive Round Summary
 import streamlit as st
 import pandas as pd
 import matplotlib.colors as mcolors
@@ -11,8 +11,35 @@ from utils.Data_Loader import load_data
 
 def show():
 
-    # Title
-    st.title("📊 Round Summary")
+    # Page Title & Sub Title
+    st.markdown(
+        """
+        <div style='text-align: center; margin-top: 1rem;'>
+            <h1 style='
+                font-family: "Space Grotesk", sans-serif; 
+                font-weight: 700; 
+                font-size: 3rem;   /* much bigger title */
+                margin: 0;
+                color: #ffffff;
+            '>
+                📊 Round Summary
+            </h1>
+            <h2 style='
+                font-family: "Martian Mono", monospace; 
+                font-weight: 400; 
+                font-size: 1.2rem; 
+                margin: 0;
+                color: #cccccc;
+            '>
+                Dive deep into your golf rounds and performance trends!
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Visual divider
+    st.divider()
 
     # Load Data
     summary_df, rounds_df, course_df = load_data()
@@ -81,6 +108,11 @@ def show():
 
     # Display Summary Table
     display_df = filtered_summary.copy()
+
+    # Sort by raw Date first (newest at bottom)
+    display_df = display_df.sort_values("Date", ascending=True)
+
+    # Rename columns
     display_df = display_df.rename(
         columns={
             "Date": "📅 Date",
@@ -92,10 +124,17 @@ def show():
             "Plus_/_Minus": "➕ / ➖ vs Par",
         }
     )
-    display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime("%d %b %Y")
-    display_df = display_df.drop(columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"], errors="ignore")
 
-    # Rounds DataFrame Display
+    # Format date for display only
+    display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime("%d %b %Y")
+
+    # Drop internal columns
+    display_df = display_df.drop(
+        columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"],
+        errors="ignore"
+    )
+
+    # Rounds DataFrame
     st.dataframe(display_df, width="stretch", hide_index=True)
 
     # Filter hole data based on RoundID filter (or all filtered rounds if none selected)
@@ -137,7 +176,6 @@ def show():
             names="Shot",
             values="Count",
             color="Shot",
-            hole=0.3,
             color_discrete_map={
                 "Birdie": "#a8e6a2",
                 "Par": "#d0f2b2",
@@ -159,15 +197,12 @@ def show():
 
     # Score Trend Over Time 18 vs 9 Holes
     with col_scoretrend:
-        # Start from the filtered summary (already respects filters like Player, Course, Type, RoundID)
         plot_df = filtered_summary.copy()
 
-        # Convert Date to datetime
         plot_df["Date"] = pd.to_datetime(plot_df["Date"])
 
-        # Make a 'type group' column: Full 18 vs Front/Back 9
         def group_type(row):
-            t = str(row["Round"]).strip()  # safe: remove whitespace
+            t = str(row["Round"]).strip()
             if t == "Full-18":
                 return "Full 18"
             elif t in ["Front-9", "Back-9"]:
@@ -177,28 +212,49 @@ def show():
 
         plot_df["TypeGroup"] = plot_df.apply(group_type, axis=1)
         plot_df = plot_df[plot_df["TypeGroup"].notna()]
-
-        # Sort by Date
         plot_df = plot_df.sort_values("Date")
 
-        # Plot
+        # Pastel palette (repurposed for players)
+        player_palette = [
+            "#a8e6a2",
+            "#94b7df",
+            "#ffe29a",
+            "#ffb285",
+            "#ff7f7f",
+            "#d8a8ff",
+        ]
+
+        players = plot_df["Player"].unique()
+        color_map = {
+            player: player_palette[i % len(player_palette)]
+            for i, player in enumerate(players)
+        }
+
         fig = px.line(
             plot_df,
             x="Date",
             y="Score",
-            color="Player",        # now multiple players will each have their own line
-            line_dash="TypeGroup", # Full 18 vs 9-hole rounds
+            color="Player",
+            line_dash="TypeGroup",
             markers=True,
-            color_discrete_sequence=px.colors.qualitative.Set2
+            color_discrete_map=color_map,
+        )
+
+        # Fill the area under each line
+        fig.update_traces(
+            fill="tozeroy",
+            opacity=0.6
         )
 
         fig.update_layout(
             xaxis_title="Date",
             yaxis_title="Score",
             legend_title="Player / Round Type",
-            template="plotly_dark"
+            template="plotly_dark",
+            hovermode="x unified"
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
+
 
 

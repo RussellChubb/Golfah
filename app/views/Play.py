@@ -15,8 +15,35 @@ def show():
     # Load in Data
     summary_df, rounds_df, course_df = load_data()
 
-    # Page Title
-    st.title("⛳ Add New Round")
+    # Page Title & Sub Title
+    st.markdown(
+        """
+        <div style='text-align: center; margin-top: 1rem;'>
+            <h1 style='
+                font-family: "Space Grotesk", sans-serif; 
+                font-weight: 700; 
+                font-size: 3rem;   /* much bigger title */
+                margin: 0;
+                color: #ffffff;
+            '>
+                ⛳ Add New Round
+            </h1>
+            <h2 style='
+                font-family: "Martian Mono", monospace; 
+                font-weight: 400; 
+                font-size: 1.2rem; 
+                margin: 0;
+                color: #cccccc;
+            '>
+                Log your latest golf round and track your progress!
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Visual divider
+    st.divider()
 
     # New Round Form
     with st.form("new_round_form"):
