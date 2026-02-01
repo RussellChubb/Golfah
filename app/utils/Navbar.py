@@ -7,16 +7,14 @@ from streamlit_option_menu import option_menu
 # Navbar
 def navbar():
     page = option_menu(
-        menu_title=None,  # Hide the title
+        menu_title=None,
         options=[
             "Home",
-            # "Hole Analysis",
             "Play",
             "Round Summary",
         ],
         icons=[
             "house-fill",
-            # "flag-fill",
             "plus-circle-fill",
             "bar-chart-fill"
         ],
@@ -27,7 +25,7 @@ def navbar():
             "container": {
                 "padding": "0!important",
                 "background-color": "transparent",
-                "max-width": "100%",  # Make it full width
+                "max-width": "100%",
             },
             "icon": {"color": "rgba(46,204,113,0.9)", "font-size": "18px"},
             "nav-link": {
@@ -35,11 +33,11 @@ def navbar():
                 "font-size": "16px",
                 "text-align": "center",
                 "margin": "0px",
-                "padding": "12px 30px",  # Increased padding for wider buttons
+                "padding": "12px 30px",
                 "background-color": "transparent",
                 "border-bottom": "2px solid transparent",
                 "color": "#ffffff",
-                "flex": "1",  # Makes each button take equal width
+                "flex": "1",
             },
             "nav-link-selected": {
                 "background-color": "rgba(46,204,113,0.2)",

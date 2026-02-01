@@ -17,11 +17,6 @@ if page == "Home":
 
     Home.show()
 
-# elif page == "Hole Analysis":
-#     from views import Hole_Analysis
-
-#     Hole_Analysis.show()
-
 elif page == "Play":
     from views import Play
 

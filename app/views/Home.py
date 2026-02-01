@@ -7,6 +7,7 @@ from streamlit_option_menu import option_menu
 import os
 from utils.Navbar import navbar
 from utils.Data_Loader import load_data
+import pydeck as pdk
 
 # Page Configuration
 st.set_page_config(page_title="Golfah", page_icon="⛳", layout="wide")
@@ -23,6 +24,7 @@ def show():
         "text-align: center; "
         "margin-bottom: 0.5em; "
         "color: #ffffff;"
+        "min-height: 150px;"
     )
 
     # Load fonts
@@ -118,6 +120,37 @@ def show():
         unsafe_allow_html=True,
     )
 
+    # Divider
+    st.divider()
+
+    # Heading for Course Map
+    # Page Title & Sub Title
+    st.markdown(
+        """
+        <div style='text-align: center; margin-top: 1rem;'>
+            <h1 style='
+                font-family: "Space Grotesk", sans-serif; 
+                font-weight: 700; 
+                font-size: 3rem;
+                margin: 0;
+                color: #ffffff;
+            '>
+                High Level Metrics 📊  
+            </h1>
+            <h2 style='
+                font-family: "Martian Mono", monospace; 
+                font-weight: 400; 
+                font-size: 1.2rem; 
+                margin: 0;
+                color: #cccccc;
+            '>
+                My High Level Golf Stats at a Glance!
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     # Load Data
     summary_df, rounds_df, course_df = load_data()
 
@@ -144,9 +177,13 @@ def show():
     # Total rounds for Russell
     total_rounds = len(summary_df[summary_df["Player"] == "Russell"])
 
-    # Summary cards with custom styling
-    col1, col2, col3 = st.columns(3)
+    # # Estiated Handicap (simple formula)
+    # estimated_handicap = (russell_solo["Score"] - russell_solo["Par"]).mean() if not russell_solo.empty else None
 
+    # Summary cards with custom styling
+    col1, col2, col3, col4 = st.columns(4)
+
+    # Best Score 18 Holes
     col1.markdown(
         f"<div style='{metric_style}'>"
         f"<div style='font-size:0.9rem; color:#cccccc; margin-bottom:0.5em'><b>Best Score (18 Holes) 🏆</b></div>"
@@ -156,6 +193,7 @@ def show():
         unsafe_allow_html=True,
     )
 
+    # Best Score 9 Holes
     col2.markdown(
         f"<div style='{metric_style}'>"
         f"<div style='font-size:0.9rem; color:#cccccc; margin-bottom:0.5em'><b>Best Score (9 Holes) 🏆</b></div>"
@@ -165,10 +203,94 @@ def show():
         unsafe_allow_html=True,
     )
 
+    # Total Rounds Played
     col3.markdown(
         f"<div style='{metric_style}'>"
         f"<div style='font-size:0.9rem; color:#cccccc; margin-bottom:0.5em'><b>Total Rounds Played 📊</b></div>"
         f"<div style='font-size:1.8rem; color:rgba(46,204,113,1); font-weight:700'>{total_rounds}</div>"
+        f"<div style='font-size:0.75rem; color:#aaaaaa; margin-top:0.3em'>Placeholder to say how many in the last 30 days</div>"
         "</div>",
         unsafe_allow_html=True,
     )
+
+    # # TODO: Estimated Handicap (simple formula)
+    # col4.markdown(
+    #     f"<div style='{metric_style}'>"
+    #     f"<div style='font-size:0.9rem; color:#cccccc; margin-bottom:0.5em'><b>Estimated Handicap</b></div>"
+    #     f"<div style='font-size:1.8rem; color:rgba(46,204,113,1); font-weight:700'>{estimated_handicap}</div>"
+    #     "</div>",
+    #     unsafe_allow_html=True,
+    # )
+
+    # Divider
+    st.divider()
+
+    # Heading for Course Map
+    # Page Title & Sub Title
+    st.markdown(
+        """
+        <div style='text-align: center; margin-top: 1rem;'>
+            <h1 style='
+                font-family: "Space Grotesk", sans-serif; 
+                font-weight: 700; 
+                font-size: 3rem;
+                margin: 0;
+                color: #ffffff;
+            '>
+                Course Map 🗺️  
+            </h1>
+            <h2 style='
+                font-family: "Martian Mono", monospace; 
+                font-weight: 400; 
+                font-size: 1.2rem; 
+                margin: 0;
+                color: #cccccc;
+            '>
+                Visualing all the golf courses I've played!
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Divider
+    st.divider()
+
+    # Layout for Map and Table
+    colmap, coltable = st.columns([2,1])
+
+    with colmap:
+        # Filter courses with coords
+        map_df = course_df[["Course", "LAT", "LON"]].dropna()
+
+        # View state (centered roughly on NZ)
+        view_state = pdk.ViewState(
+            latitude=map_df["LAT"].mean(),
+            longitude=map_df["LON"].mean(),
+            zoom=6,
+            pitch=0,
+        )
+
+        # Layer
+        layer = pdk.Layer(
+            "ScatterplotLayer",
+            data=map_df,
+            get_position="[LON, LAT]",
+            get_radius=5000,
+            get_fill_color=[46, 204, 113, 180],  # Golfah green
+            pickable=True,
+        )
+
+        # Render
+        st.pydeck_chart(
+            pdk.Deck(
+                layers=[layer],
+                initial_view_state=view_state,
+                tooltip={"text": "{Course}"},
+            )
+        )
+
+    # Table of Courses
+    with coltable:
+        st.dataframe(course_df[["Course", "Slope_Rating", "Course_Rating"]].drop_duplicates().reset_index(drop=True), hide_index=True)
+
