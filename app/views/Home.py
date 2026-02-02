@@ -264,21 +264,21 @@ def show():
         map_df = course_df[["Course", "LAT", "LON"]].dropna()
 
         # View state (centered roughly on NZ)
-        view_state = pdk.ViewState(
-            latitude=map_df["LAT"].mean(),
-            longitude=map_df["LON"].mean(),
-            zoom=6,
-            pitch=0,
-        )
+        view_state = pdk.ViewState( latitude=map_df["LAT"].mean(), longitude=map_df["LON"].mean(), zoom=4, pitch=0, )
 
         # Layer
         layer = pdk.Layer(
             "ScatterplotLayer",
             data=map_df,
             get_position="[LON, LAT]",
-            get_radius=5000,
-            get_fill_color=[46, 204, 113, 180],  # Golfah green
+            radius_units="pixels",
+            get_radius=6,
+            radius_min_pixels=4,
+            radius_max_pixels=12,
+            get_fill_color=[46, 204, 113, 50],
             pickable=True,
+            auto_highlight=True,
+            highlight_color=[255, 255, 255],
         )
 
         # Render
@@ -292,5 +292,10 @@ def show():
 
     # Table of Courses
     with coltable:
+        course_df = course_df.rename(
+            {"Slope_Rating" : "Slope Rating",
+            "Course_Rating" : "Course Rating"},
+            )
+
         st.dataframe(course_df[["Course", "Slope_Rating", "Course_Rating"]].drop_duplicates().reset_index(drop=True), hide_index=True)
 
