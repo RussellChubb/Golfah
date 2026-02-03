@@ -1,13 +1,37 @@
 # Golfah: Interactive Round Summary
 import streamlit as st
 import pandas as pd
-import matplotlib.colors as mcolors
 import plotly.express as px
-from utils.Data_Loader import load_data
+from utils.data_loader import load_data
+from pathlib import Path
 
 # TODO
+# Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
 # Have Round ID Filter be responsive to other filters.
-# Score Trend Profile Time Series
+# Have some kind of thing to bring up pictures of people when their name is in the Player List
+
+# Data Loading
+APP_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = APP_DIR / "data"
+
+
+# Data Caching
+@st.cache_data
+def load_data():
+    summary = pd.read_excel(
+        DATA_DIR / "Summary_Data.xlsx",
+        parse_dates=["Date"],
+    )
+
+    rounds = pd.read_excel(
+        DATA_DIR / "Rounds_Data.xlsx",
+        parse_dates=["Date"],
+    )
+
+    courses = pd.read_excel(DATA_DIR / "Course_Data.xlsx")
+
+    return summary, rounds, courses
+
 
 def show():
 
@@ -46,19 +70,23 @@ def show():
 
     # Create Synthetic Unique ID for Each Round
     summary_df["RoundID"] = (
-        summary_df["Date"].astype(str) + "_" +
-        summary_df["Player"].astype(str) + "_" +
-        summary_df["Course"].astype(str)
+        summary_df["Date"].astype(str)
+        + "_"
+        + summary_df["Player"].astype(str)
+        + "_"
+        + summary_df["Course"].astype(str)
     )
     rounds_df["RoundID"] = (
-        rounds_df["Date"].astype(str) + "_" +
-        rounds_df["Player"].astype(str) + "_" +
-        rounds_df["Course"].astype(str)
+        rounds_df["Date"].astype(str)
+        + "_"
+        + rounds_df["Player"].astype(str)
+        + "_"
+        + rounds_df["Course"].astype(str)
     )
-    
+
     # Filters
     col_round, col_course, col_player, col_type, col_roundid = st.columns(5)
-    
+
     round_options = sorted(summary_df["Round"].dropna().unique().tolist())
     with col_round:
         selected_rounds = st.multiselect(
@@ -76,29 +104,47 @@ def show():
     player_options = sorted(summary_df["Player"].dropna().unique().tolist())
     default_players = ["Russell"] if "Russell" in player_options else []
     with col_player:
-        selected_players = st.multiselect("Player", options=player_options, default=default_players)
+        selected_players = st.multiselect(
+            "Player", options=player_options, default=default_players
+        )
 
     # Round Type Filter
     with col_type:
-        selected_types = st.multiselect("Type", options=summary_df["Type"].dropna().unique().tolist(), default=["Solo"])
+        selected_types = st.multiselect(
+            "Type",
+            options=summary_df["Type"].dropna().unique().tolist(),
+            default=["Solo"],
+        )
 
     # RoundID Filter
     with col_roundid:
         roundid_options = sorted(summary_df["RoundID"].dropna().unique().tolist())
-        selected_roundids = st.multiselect("Round ID", options=roundid_options, default=[])
+        selected_roundids = st.multiselect(
+            "Round ID", options=roundid_options, default=[]
+        )
 
     # Allow users to Apply Filters
     filtered_summary = summary_df.copy()
     if selected_rounds:
-        filtered_summary = filtered_summary[filtered_summary["Round"].isin(selected_rounds)]
+        filtered_summary = filtered_summary[
+            filtered_summary["Round"].isin(selected_rounds)
+        ]
     if selected_courses:
-        filtered_summary = filtered_summary[filtered_summary["Course"].isin(selected_courses)]
+        filtered_summary = filtered_summary[
+            filtered_summary["Course"].isin(selected_courses)
+        ]
     if selected_players:
-        filtered_summary = filtered_summary[filtered_summary["Player"].isin(selected_players)]
+        filtered_summary = filtered_summary[
+            filtered_summary["Player"].isin(selected_players)
+        ]
     if selected_types:
-        filtered_summary = filtered_summary[filtered_summary["Type"].isin(selected_types)]
+        filtered_summary = filtered_summary[
+            filtered_summary["Type"].isin(selected_types)
+        ]
     if selected_roundids:
-        filtered_summary = filtered_summary[filtered_summary["RoundID"].isin(selected_roundids)]
+        filtered_summary = filtered_summary[
+            filtered_summary["RoundID"].isin(selected_roundids)
+        ]
 
     # Small Caption to show number of rounds selected
     st.caption(f"📊 {len(filtered_summary)} rounds selected")
@@ -126,12 +172,13 @@ def show():
     )
 
     # Format date for display only
-    display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime("%d %b %Y")
+    display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime(
+        "%d %b %Y"
+    )
 
     # Drop internal columns
     display_df = display_df.drop(
-        columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"],
-        errors="ignore"
+        columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"], errors="ignore"
     )
 
     # Rounds DataFrame
@@ -142,7 +189,7 @@ def show():
         round_holes = rounds_df[rounds_df["RoundID"].isin(selected_roundids)]
     else:
         round_holes = rounds_df[rounds_df["RoundID"].isin(filtered_summary["RoundID"])]
-    
+
     merged = round_holes.merge(course_df, on=["Course", "Hole"], how="left")
     merged["Diff"] = merged["Score"] - merged["Par"]
 
@@ -182,15 +229,15 @@ def show():
                 "Bogey": "#ffe29a",
                 "Double": "#ffb285",
                 "Triple": "#ff7f7f",
-                "Blow-up (4+)": "#d8a8ff"
+                "Blow-up (4+)": "#d8a8ff",
             },
         )
-        
+
         fig.update_traces(
-            textposition='inside',
-            textinfo='percent+label',
+            textposition="inside",
+            textinfo="percent+label",
             marker_line_color="#ffffff",
-            marker_line_width=2
+            marker_line_width=2,
         )
 
         st.plotly_chart(fig, width="stretch")
@@ -241,20 +288,14 @@ def show():
         )
 
         # Fill the area under each line
-        fig.update_traces(
-            fill="tozeroy",
-            opacity=0.6
-        )
+        fig.update_traces(fill="tozeroy", opacity=0.6)
 
         fig.update_layout(
             xaxis_title="Date",
             yaxis_title="Score",
             legend_title="Player / Round Type",
             template="plotly_dark",
-            hovermode="x unified"
+            hovermode="x unified",
         )
 
         st.plotly_chart(fig, width="stretch")
-
-
-
