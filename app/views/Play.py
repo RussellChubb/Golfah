@@ -5,9 +5,34 @@ import os
 import streamlit as st
 import pandas as pd
 from datetime import date
-from streamlit_option_menu import option_menu
-from utils.Navbar import navbar
-from utils.Data_Loader import load_data, save_data
+from utils.data_loader import load_data
+from pathlib import Path
+
+# TODO
+# Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
+
+# Data Loading
+APP_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = APP_DIR / "data"
+
+
+# Data Caching
+@st.cache_data
+def load_data():
+    summary = pd.read_excel(
+        DATA_DIR / "Summary_Data.xlsx",
+        parse_dates=["Date"],
+    )
+
+    rounds = pd.read_excel(
+        DATA_DIR / "Rounds_Data.xlsx",
+        parse_dates=["Date"],
+    )
+
+    courses = pd.read_excel(DATA_DIR / "Course_Data.xlsx")
+
+    return summary, rounds, courses
+
 
 # Show function (paradigm used for page-switching)
 def show():
@@ -52,11 +77,15 @@ def show():
         course = col1.selectbox("Course", course_df["Course"].unique())
         player = col2.text_input("Player Name", "Russell")
         round_date = col3.date_input("Date", date.today())
-        round_type = col1.selectbox("Round Type", ["Front-9", "Back-9", "Full", "Practice"])
+        round_type = col1.selectbox(
+            "Round Type", ["Front-9", "Back-9", "Full", "Practice"]
+        )
         comment = st.text_input("Comment", "")
 
         st.subheader("Enter Scores")
-        holes = course_df[course_df["Course"] == course][["Hole", "Par", "Distance"]].copy()
+        holes = course_df[course_df["Course"] == course][
+            ["Hole", "Par", "Distance"]
+        ].copy()
         holes["Score"] = holes["Hole"].apply(
             lambda h: st.number_input(
                 f"Hole {h} Score", min_value=1, max_value=15, value=4, step=1
@@ -87,14 +116,15 @@ def show():
         )
         summary_df = pd.concat([summary_df, new_summary], ignore_index=True)
 
-        # Append to rounds data
-        new_rounds = holes.assign(
-            Course=course,
-            Player=player,
-            Date=round_date,
-        )[["Course", "Hole", "Player", "Score", "Date"]]
-        rounds_df = pd.concat([rounds_df, new_rounds], ignore_index=True)
+        # TODO: Need to redo this func, doesn't work rn
+        # # Append to rounds data
+        # new_rounds = holes.assign(
+        #     Course=course,
+        #     Player=player,
+        #     Date=round_date,
+        # )[["Course", "Hole", "Player", "Score", "Date"]]
+        # rounds_df = pd.concat([rounds_df, new_rounds], ignore_index=True)
 
-        save_data(summary_df, rounds_df, course_df)
+        # save_data(summary_df, rounds_df, course_df)
 
-        st.success(f"New round added for {player} at {course} ({round_type})!")
+        # st.success(f"New round added for {player} at {course} ({round_type})!")

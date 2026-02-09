@@ -3,14 +3,35 @@
 # Imports
 import streamlit as st
 import pandas as pd
-from streamlit_option_menu import option_menu
-import os
-from utils.Navbar import navbar
-from utils.Data_Loader import load_data
+from utils.data_loader import load_data
+from pathlib import Path
 import pydeck as pdk
 
-# Page Configuration
-st.set_page_config(page_title="Golfah", page_icon="⛳", layout="wide")
+# TODO
+# Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
+
+# Data Loading
+APP_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = APP_DIR / "data"
+
+
+# Data Caching
+@st.cache_data
+def load_data():
+    summary = pd.read_excel(
+        DATA_DIR / "Summary_Data.xlsx",
+        parse_dates=["Date"],
+    )
+
+    rounds = pd.read_excel(
+        DATA_DIR / "Rounds_Data.xlsx",
+        parse_dates=["Date"],
+    )
+
+    courses = pd.read_excel(DATA_DIR / "Course_Data.xlsx")
+
+    return summary, rounds, courses
+
 
 # Show function (paradigm used for page-switching)
 def show():
@@ -123,7 +144,6 @@ def show():
     # Divider
     st.divider()
 
-    # Heading for Course Map
     # Page Title & Sub Title
     st.markdown(
         """
@@ -161,7 +181,9 @@ def show():
         return value
 
     # Filter for Russell's solo rounds
-    russell_solo = summary_df[(summary_df["Player"] == "Russell") & (summary_df["Type"] == "Solo")]
+    russell_solo = summary_df[
+        (summary_df["Player"] == "Russell") & (summary_df["Type"] == "Solo")
+    ]
 
     # Get best scores
     russell_18 = russell_solo[russell_solo["Round"] == "Full-18"]
@@ -169,11 +191,19 @@ def show():
 
     # Calculate stats
     best_score_18 = russell_18["Score"].min() if not russell_18.empty else None
-    best_course_18 = russell_18.loc[russell_18["Score"].idxmin(), "Course"] if not russell_18.empty else None
-    
+    best_course_18 = (
+        russell_18.loc[russell_18["Score"].idxmin(), "Course"]
+        if not russell_18.empty
+        else None
+    )
+
     best_score_9 = russell_9["Score"].min() if not russell_9.empty else None
-    best_course_9 = russell_9.loc[russell_9["Score"].idxmin(), "Course"] if not russell_9.empty else None
-    
+    best_course_9 = (
+        russell_9.loc[russell_9["Score"].idxmin(), "Course"]
+        if not russell_9.empty
+        else None
+    )
+
     # Total rounds for Russell
     total_rounds = len(summary_df[summary_df["Player"] == "Russell"])
 
@@ -257,14 +287,19 @@ def show():
     st.divider()
 
     # Layout for Map and Table
-    colmap, coltable = st.columns([2,1])
+    colmap, coltable = st.columns([2, 1])
 
     with colmap:
         # Filter courses with coords
         map_df = course_df[["Course", "LAT", "LON"]].dropna()
 
         # View state (centered roughly on NZ)
-        view_state = pdk.ViewState( latitude=map_df["LAT"].mean(), longitude=map_df["LON"].mean(), zoom=4, pitch=0, )
+        view_state = pdk.ViewState(
+            latitude=map_df["LAT"].mean(),
+            longitude=map_df["LON"].mean(),
+            zoom=4,
+            pitch=0,
+        )
 
         # Layer
         layer = pdk.Layer(
@@ -293,9 +328,12 @@ def show():
     # Table of Courses
     with coltable:
         course_df = course_df.rename(
-            {"Slope_Rating" : "Slope Rating",
-            "Course_Rating" : "Course Rating"},
-            )
+            {"Slope_Rating": "Slope Rating", "Course_Rating": "Course Rating"},
+        )
 
-        st.dataframe(course_df[["Course", "Slope_Rating", "Course_Rating"]].drop_duplicates().reset_index(drop=True), hide_index=True)
-
+        st.dataframe(
+            course_df[["Course", "Slope_Rating", "Course_Rating"]]
+            .drop_duplicates()
+            .reset_index(drop=True),
+            hide_index=True,
+        )

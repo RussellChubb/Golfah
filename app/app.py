@@ -26,4 +26,3 @@ elif page == "Round Summary":
     from views import Round_Summary
 
     Round_Summary.show()
-
