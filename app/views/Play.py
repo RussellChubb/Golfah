@@ -5,11 +5,11 @@ import os
 import streamlit as st
 import pandas as pd
 from datetime import date
-from utils.data_loader import load_data
+from utils.Data_Loader import load_data
 from pathlib import Path
 
 # TODO
-# Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
+# Actually get this page working
 
 # Data Loading
 APP_DIR = Path(__file__).resolve().parents[1]

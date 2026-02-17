@@ -3,7 +3,7 @@
 # Imports
 import streamlit as st
 import pandas as pd
-from utils.data_loader import load_data
+from utils.Data_Loader import load_data
 from pathlib import Path
 import pydeck as pdk
 
@@ -110,9 +110,7 @@ def show():
                     color: #cccccc;
                     margin-bottom: 1em;
                 '>
-                    Golfah is your personal golf analytics platform designed to help you track, analyze, and improve your game. 
-                    By logging every round you play, you can identify patterns in your performance, understand your strengths and 
-                    weaknesses, and make data-driven decisions to lower your scores.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </p>
                 <p style='
                     font-family: "Martian Mono", monospace; 
@@ -121,9 +119,7 @@ def show():
                     color: #cccccc;
                     margin-bottom: 1em;
                 '>
-                    Whether you're tracking solo rounds or playing with friends, Golfah provides detailed insights into your 
-                    shot distribution, course performance, and scoring trends over time. Use the navigation menu to explore 
-                    your round summaries, add new rounds, or dive deep into your statistics.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                 </p>
                 <p style='
                     font-family: "Martian Mono", monospace; 
@@ -132,8 +128,7 @@ def show():
                     color: #cccccc;
                     margin-bottom: 0;
                 '>
-                    <strong>Remember:</strong> The key to improvement is consistent tracking and honest analysis. Every round is 
-                    a learning opportunity! 🏌️
+                    <strong>Remember:</strong> Remove the AI slop....
                 </p>
             </div>
         </div>
