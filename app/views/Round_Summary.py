@@ -9,6 +9,7 @@ from pathlib import Path
 # Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
 # Have Round ID Filter be responsive to other filters.
 # Have some kind of thing to bring up pictures of people when their name is in the Player List
+# Sort RoundID by aesc?
 
 # Data Loading
 APP_DIR = Path(__file__).resolve().parents[1]
