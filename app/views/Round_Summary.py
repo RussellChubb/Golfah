@@ -1,4 +1,12 @@
 # Golfah: Interactive Round Summary
+
+# Deployment
+import sys
+from pathlib import Path
+
+# Needed for deployment to ensure the app can find the views and utils modules
+sys.path.insert(0, str(Path(__file__).parent))
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px

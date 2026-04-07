@@ -1,5 +1,12 @@
 # Golfah: Play Page
 
+# Deployment
+import sys
+from pathlib import Path
+
+# Needed for deployment to ensure the app can find the views and utils modules
+sys.path.insert(0, str(Path(__file__).parent))
+
 # Imports
 import os
 import streamlit as st
