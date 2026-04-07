@@ -9,6 +9,8 @@ import pydeck as pdk
 
 # TODO
 # Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
+# Get rid of the Lorem Ipsum and replace with some actual content :)
+# Add in the handicap() func.
 
 # Data Loading
 APP_DIR = Path(__file__).resolve().parents[1]
