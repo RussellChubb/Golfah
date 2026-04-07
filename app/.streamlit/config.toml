@@ -10,6 +10,3 @@ gatherUsageStats = false
 [server]
 enableCORS = true
 runOnSave = true
-
-[runner]
-pythonPath = ["."]
