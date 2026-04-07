@@ -1,16 +1,8 @@
 # Golfah: Home Page
 
-# Deployment
-import sys
-from pathlib import Path
-
-# Needed for deployment to ensure the app can find the views and utils modules
-sys.path.insert(0, str(Path(__file__).parent))
-
 # Imports
 import streamlit as st
 import pandas as pd
-from utils.Data_Loader import load_data
 from pathlib import Path
 import pydeck as pdk
 
@@ -325,7 +317,7 @@ def show():
             pdk.Deck(
                 layers=[layer],
                 initial_view_state=view_state,
-                tooltip={"text": "{Course}"},
+                tooltip={"text": "{Course}"},  # type: ignore
             )
         )
 
