@@ -1,5 +1,4 @@
 # Golfah: Entry Point
-# This is the main entry point for the Golfah Streamlit application.
 
 # Deployment
 import sys
@@ -18,7 +17,7 @@ st.set_page_config(page_title="Golfah", page_icon="⛳", layout="wide")
 # Render Navbar + Get to Selected Page
 page = navbar()
 
-# Page Routing (match the option_menu labels)
+# Page Routingh
 if page == "Home":
     from views import Home
 
