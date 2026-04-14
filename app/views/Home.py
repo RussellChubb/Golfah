@@ -10,6 +10,8 @@ import pydeck as pdk
 # Have some kind of check to see whether or not the data files exist, if they don't perhaps we can raise something for users to chuck their own .csvs in
 # Get rid of the Lorem Ipsum and replace with some actual content :)
 # Add in the handicap() func.
+# https://docs.streamlit.io/develop/tutorials/elements/dataframe-row-selections <-- This as an idea
+# https://docs.streamlit.io/develop/tutorials/elements/annotate-an-altair-chart <-- This as an idea
 
 # Data Loading
 APP_DIR = Path(__file__).resolve().parents[1]
