@@ -29,6 +29,7 @@ def load_data():
     return summary, rounds, courses
 
 
+# Main Function to Show Analysis Page
 def show():
 
     # Page Title & Sub Title

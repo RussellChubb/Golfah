@@ -17,7 +17,7 @@ st.set_page_config(page_title="Golfah", page_icon="⛳", layout="wide")
 # Render Navbar + Get to Selected Page
 page = navbar()
 
-# Page Routingh
+# Page Routing
 if page == "Home":
     from views import Home
 
@@ -28,7 +28,7 @@ elif page == "Play":
 
     Play.show()
 
-elif page == "Round Summary":
-    from views import Round_Summary
+elif page == "Analysis":
+    from views import Analysis
 
-    Round_Summary.show()
+    Analysis.show()
