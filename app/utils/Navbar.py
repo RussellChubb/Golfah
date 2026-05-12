@@ -1,7 +1,6 @@
 # Golfah Utils: Navbar
 
 # Imports
-import streamlit as st
 from streamlit_option_menu import option_menu
 
 # Navbar
@@ -11,7 +10,7 @@ def navbar():
         options=[
             "Home",
             "Play",
-            "Round Summary",
+            "Analysis",
         ],
         icons=[
             "house-fill",
