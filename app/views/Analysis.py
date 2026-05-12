@@ -28,7 +28,12 @@ def load_data():
 
     return summary, rounds, courses
 
+<<<<<<<< HEAD:app/views/analysis/analysis.py
+# Main Function to Show Round Summary Page
+========
+
 # Main Function to Show Analysis Page
+>>>>>>>> 81b9a19ada65f6626ea27c14f44f62707a5df397:app/views/Analysis.py
 def show():
 
     # Page Title & Sub Title
