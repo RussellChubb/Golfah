@@ -20,21 +20,28 @@ page = navbar()
 # Page Routing
 # If it's the home-page, render the home-page.
 if page == "Home":
-    from views.home import home
+    from views import home
 
     # Render the home page.
     home.show()
 
 # If it's the play-page, render the play-page.
 elif page == "Play":
-    from views.add_round import play
+    from views import play
 
     # Render the play page.
     play.show()
 
 # If it's the analysis-page, render the analysis-page.
 elif page == "Analysis":
-    from views.analysis import analysis
+    from views import analysis
 
     # Render the analysis page.
     analysis.show()
+
+# If it's the achievements-page, render the achievements-page.
+elif page == "Achievements":
+    from views import achievements
+
+    # Render the achievements page.
+    achievements.show()

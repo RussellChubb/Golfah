@@ -7,7 +7,7 @@ import plotly.express as px
 from pathlib import Path
 
 # Data Loading
-APP_DIR = Path(__file__).resolve().parents[2]
+APP_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = APP_DIR / "data"
 
 
@@ -28,12 +28,7 @@ def load_data():
 
     return summary, rounds, courses
 
-<<<<<<<< HEAD:app/views/analysis/analysis.py
-# Main Function to Show Round Summary Page
-========
-
 # Main Function to Show Analysis Page
->>>>>>>> 81b9a19ada65f6626ea27c14f44f62707a5df397:app/views/Analysis.py
 def show():
 
     # Page Title & Sub Title
@@ -47,7 +42,7 @@ def show():
                 margin: 0;
                 color: #ffffff;
             '>
-                📊 Round Summary
+                Analysis 📊
             </h1>
             <h2 style='
                 font-family: "Martian Mono", monospace; 
@@ -62,9 +57,6 @@ def show():
         """,
         unsafe_allow_html=True,
     )
-
-    # Visual divider
-    st.divider()
 
     # Load Data
     summary_df, rounds_df, course_df = load_data()
@@ -85,137 +77,242 @@ def show():
         + rounds_df["Course"].astype(str)
     )
 
-    # Filters
-    col_round, col_course, col_player, col_type, col_roundid = st.columns(5)
+    # Setting up tabbed layout for different analyses
+    course_heat_map, hole_analysis, scoretrend, shot_profile, putting, skill_radar, tee_shots, = st.tabs(["Course Heat Map", "Hole Analysis", "Score Trend", "Shot Profile", "Putting Analysis", "Skill Radar", "Tee Shot Analysis"])
 
-    round_options = sorted(summary_df["Round"].dropna().unique().tolist())
-    with col_round:
-        selected_rounds = st.multiselect(
-            "Round type",
-            options=round_options,
-            default=["Full-18"] if "Full-18" in round_options else [],
+    # Hole Analysis Tab
+    with hole_analysis:
+
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does Hole Analysis Show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-    # Course Filter
-    course_options = sorted(summary_df["Course"].dropna().unique().tolist())
-    with col_course:
-        selected_courses = st.multiselect("Course", options=course_options, default=[])
+        # Filters
+        col_round, col_course, col_player, col_type, col_roundid = st.columns(5)
 
-    # Player Filter
-    player_options = sorted(summary_df["Player"].dropna().unique().tolist())
-    default_players = ["Russell"] if "Russell" in player_options else []
-    with col_player:
-        selected_players = st.multiselect(
-            "Player", options=player_options, default=default_players
+        round_options = sorted(summary_df["Round"].dropna().unique().tolist())
+        with col_round:
+            selected_rounds = st.multiselect(
+                "Round type",
+                options=round_options,
+                default=["Full-18"] if "Full-18" in round_options else [],
+            )
+
+        # Course Filter
+        course_options = sorted(summary_df["Course"].dropna().unique().tolist())
+        with col_course:
+            selected_courses = st.multiselect("Course", options=course_options, default=[])
+
+        # Player Filter
+        player_options = sorted(summary_df["Player"].dropna().unique().tolist())
+        default_players = ["Russell"] if "Russell" in player_options else []
+        with col_player:
+            selected_players = st.multiselect(
+                "Player", options=player_options, default=default_players
+            )
+
+        # Round Type Filter
+        with col_type:
+            selected_types = st.multiselect(
+                "Type",
+                options=summary_df["Type"].dropna().unique().tolist(),
+                default=["Solo"],
+            )
+
+        # RoundID Filter
+        with col_roundid:
+            roundid_options = sorted(summary_df["RoundID"].dropna().unique().tolist())
+            selected_roundids = st.multiselect(
+                "Round ID", options=roundid_options, default=[]
+            )
+
+        # Allow users to Apply Filters
+        filtered_summary = summary_df.copy()
+        if selected_rounds:
+            filtered_summary = filtered_summary[
+                filtered_summary["Round"].isin(selected_rounds)
+            ]
+        if selected_courses:
+            filtered_summary = filtered_summary[
+                filtered_summary["Course"].isin(selected_courses)
+            ]
+        if selected_players:
+            filtered_summary = filtered_summary[
+                filtered_summary["Player"].isin(selected_players)
+            ]
+        if selected_types:
+            filtered_summary = filtered_summary[
+                filtered_summary["Type"].isin(selected_types)
+            ]
+        if selected_roundids:
+            filtered_summary = filtered_summary[
+                filtered_summary["RoundID"].isin(selected_roundids)
+            ]
+
+        # Small Caption to show number of rounds selected
+        st.caption(f"📊 {len(filtered_summary)} rounds selected")
+        if filtered_summary.empty:
+            st.info("No rounds match the selected filters.")
+            st.stop()
+
+        # Display Summary Table
+        display_df = filtered_summary.copy()
+
+        # Sort by raw Date first (newest at bottom)
+        display_df = display_df.sort_values("Date", ascending=True)
+
+        # Rename columns
+        display_df = display_df.rename(
+            columns={
+                "Date": "📅 Date",
+                "Course": "⛳ Course",
+                "Player": "🏌️ Player",
+                "Round": "🕳️ Round",
+                "Type": "🎯 Type",
+                "Score": "📊 Score",
+                "Plus_/_Minus": "➕ / ➖ vs Par",
+            }
         )
 
-    # Round Type Filter
-    with col_type:
-        selected_types = st.multiselect(
-            "Type",
-            options=summary_df["Type"].dropna().unique().tolist(),
-            default=["Solo"],
+        # Format date for display only
+        display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime(
+            "%d %b %Y"
         )
 
-    # RoundID Filter
-    with col_roundid:
-        roundid_options = sorted(summary_df["RoundID"].dropna().unique().tolist())
-        selected_roundids = st.multiselect(
-            "Round ID", options=roundid_options, default=[]
+        # Drop internal columns
+        display_df = display_df.drop(
+            columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"], errors="ignore"
         )
 
-    # Allow users to Apply Filters
-    filtered_summary = summary_df.copy()
-    if selected_rounds:
-        filtered_summary = filtered_summary[
-            filtered_summary["Round"].isin(selected_rounds)
-        ]
-    if selected_courses:
-        filtered_summary = filtered_summary[
-            filtered_summary["Course"].isin(selected_courses)
-        ]
-    if selected_players:
-        filtered_summary = filtered_summary[
-            filtered_summary["Player"].isin(selected_players)
-        ]
-    if selected_types:
-        filtered_summary = filtered_summary[
-            filtered_summary["Type"].isin(selected_types)
-        ]
-    if selected_roundids:
-        filtered_summary = filtered_summary[
-            filtered_summary["RoundID"].isin(selected_roundids)
-        ]
+        # Rounds DataFrame
+        st.dataframe(display_df, width="stretch", hide_index=True)
 
-    # Small Caption to show number of rounds selected
-    st.caption(f"📊 {len(filtered_summary)} rounds selected")
-    if filtered_summary.empty:
-        st.info("No rounds match the selected filters.")
-        st.stop()
-
-    # Display Summary Table
-    display_df = filtered_summary.copy()
-
-    # Sort by raw Date first (newest at bottom)
-    display_df = display_df.sort_values("Date", ascending=True)
-
-    # Rename columns
-    display_df = display_df.rename(
-        columns={
-            "Date": "📅 Date",
-            "Course": "⛳ Course",
-            "Player": "🏌️ Player",
-            "Round": "🕳️ Round",
-            "Type": "🎯 Type",
-            "Score": "📊 Score",
-            "Plus_/_Minus": "➕ / ➖ vs Par",
-        }
-    )
-
-    # Format date for display only
-    display_df["📅 Date"] = pd.to_datetime(display_df["📅 Date"]).dt.strftime(
-        "%d %b %Y"
-    )
-
-    # Drop internal columns
-    display_df = display_df.drop(
-        columns=["ScoreDiff", "Par_for_Course", "RoundID", "Comment"], errors="ignore"
-    )
-
-    # Rounds DataFrame
-    st.dataframe(display_df, width="stretch", hide_index=True)
-
-    # Filter hole data based on RoundID filter (or all filtered rounds if none selected)
-    if selected_roundids:
-        round_holes = rounds_df[rounds_df["RoundID"].isin(selected_roundids)]
-    else:
-        round_holes = rounds_df[rounds_df["RoundID"].isin(filtered_summary["RoundID"])]
-
-    merged = round_holes.merge(course_df, on=["Course", "Hole"], how="left")
-    merged["Diff"] = merged["Score"] - merged["Par"]
-
-    # Function to categorize shots
-    def categorize_shot(diff):
-        if diff <= -1:
-            return "Birdie"
-        elif diff == 0:
-            return "Par"
-        elif diff == 1:
-            return "Bogey"
-        elif diff == 2:
-            return "Double"
-        elif diff == 3:
-            return "Triple"
+        # Filter hole data based on RoundID filter (or all filtered rounds if none selected)
+        if selected_roundids:
+            round_holes = rounds_df[rounds_df["RoundID"].isin(selected_roundids)]
         else:
-            return "Blow-up (4+)"
+            round_holes = rounds_df[rounds_df["RoundID"].isin(filtered_summary["RoundID"])]
 
-    merged["Shot"] = merged["Diff"].apply(categorize_shot)
+        merged = round_holes.merge(course_df, on=["Course", "Hole"], how="left")
+        merged["Diff"] = merged["Score"] - merged["Par"]
 
-    # Layout: Two Columns
-    col_scoretrend, col_donut = st.columns(2)
+    # Shot Profile Tab
+    with shot_profile:
 
-    # Shot Distribution Donut Chart
-    with col_donut:
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does Shot Profile show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    
+        # Function to categorize shots
+        def categorize_shot(diff):
+            if diff <= -1:
+                return "Birdie"
+            elif diff == 0:
+                return "Par"
+            elif diff == 1:
+                return "Bogey"
+            elif diff == 2:
+                return "Double"
+            elif diff == 3:
+                return "Triple"
+            else:
+                return "Blow-up (4+)"
+
+        merged["Shot"] = merged["Diff"].apply(categorize_shot)
+
+        # Shot Distribution Donut Chart
         shot_counts = merged["Shot"].value_counts().reset_index()
         shot_counts.columns = ["Shot", "Count"]
 
@@ -243,8 +340,58 @@ def show():
 
         st.plotly_chart(fig, width="stretch")
 
-    # Score Trend Over Time 18 vs 9 Holes
-    with col_scoretrend:
+    # Score Trend Tab
+    with scoretrend:
+
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does your score trend show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         plot_df = filtered_summary.copy()
 
         plot_df["Date"] = pd.to_datetime(plot_df["Date"])
@@ -262,7 +409,7 @@ def show():
         plot_df = plot_df[plot_df["TypeGroup"].notna()]
         plot_df = plot_df.sort_values("Date")
 
-        # Pastel palette (repurposed for players)
+        # Pastel palette
         player_palette = [
             "#a8e6a2",
             "#94b7df",
@@ -300,3 +447,211 @@ def show():
         )
 
         st.plotly_chart(fig, width="stretch")
+    
+    # Putting Analysis Tab
+    with putting:
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does the putting analysis show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Course Heat Map Tab
+    with course_heat_map:
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does the course heat map show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Skill Radar Tab
+    with skill_radar:
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does the skill radar show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Tee Shot Analysis Tab
+    with tee_shots:
+        # About Section
+        st.markdown(
+            """
+            <div style='padding: 2em 0;'>
+                <div style='
+                    background-color: rgba(38,39,48,0.5); 
+                    border-left: 4px solid rgba(46,204,113,0.7); 
+                    border-radius: 8px; 
+                    padding: 2em;
+                '>
+                    <h3 style='
+                        font-family: "Space Grotesk", sans-serif; 
+                        color: rgba(46,204,113,1); 
+                        margin-top: 0;
+                    '>
+                        What does the tee shot analysis show? ⛳
+                    </h3>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 1em;
+                    '>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                    <p style='
+                        font-family: "Martian Mono", monospace; 
+                        font-size: 1rem; 
+                        line-height: 1.6; 
+                        color: #cccccc;
+                        margin-bottom: 0;
+                    '>
+                        <strong>Remember:</strong> Remove the AI slop....
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )

@@ -11,11 +11,13 @@ def navbar():
             "Home",
             "Play",
             "Analysis",
+            "Achievements",
         ],
         icons=[
             "house-fill",
             "plus-circle-fill",
-            "bar-chart-fill"
+            "bar-chart-fill",
+            "trophy-fill",
         ],
         menu_icon="cast",
         default_index=0,
