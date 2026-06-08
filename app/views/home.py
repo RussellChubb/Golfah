@@ -7,7 +7,7 @@ from pathlib import Path
 # TODO
 # Create video to embed on this screen
 # Add R Logo to top left hand corner
-# Create a real about section, with a lot less lorem ipsum
+# Create a real about section...
 
 
 # Show function (paradigm used for page-switching)
@@ -28,7 +28,7 @@ def show():
             <h1 style='
                 font-family: "Space Grotesk", sans-serif; 
                 font-weight: 700; 
-                font-size: 5rem;   /* much bigger title */
+                font-size: 5rem;
                 margin: 0;
                 color: #ffffff;
             '>
@@ -73,29 +73,31 @@ def show():
                     font-size: 1rem; 
                     line-height: 1.6; 
                     color: #cccccc;
-                    margin-bottom: 1em;
+                    margin-bottom: 0;
                 '>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    <strong>NOTE:</strong> I've been working on version 2 of Golfah, however, in the process of doing this, I've broken some core functionality assoicated with version 1. 
                 </p>
-                <p style='
-                    font-family: "Martian Mono", monospace; 
-                    font-size: 1rem; 
-                    line-height: 1.6; 
-                    color: #cccccc;
-                    margin-bottom: 1em;
-                '>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                </p>
+                <br></br> 
                 <p style='
                     font-family: "Martian Mono", monospace; 
                     font-size: 1rem; 
                     line-height: 1.6; 
                     color: #cccccc;
                     margin-bottom: 0;
-                '>
-                    <strong>Remember:</strong> Remove the AI slop....
+                '>  
+                    Because I'm currently travelling around Europe, I haven't had the time to support these new changes, however, once I get back to work full time, I'll fix these bugs.
                 </p>
-            </div>
+                <br></br> 
+                <p style='
+                    font-family: "Martian Mono", monospace; 
+                    font-size: 1rem; 
+                    line-height: 1.6; 
+                    color: #cccccc;
+                    margin-bottom: 0;
+                '>  
+                    Cheers - Russ (The Muss)
+                </p>
+            
         </div>
         """,
         unsafe_allow_html=True,
